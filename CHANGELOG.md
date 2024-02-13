@@ -4,3 +4,6 @@
 ## 1.0.1
 
 * Supported to the minimum version which is 2.17.0
+## 1.0.2
+
+* Added logs on the permission disabled
