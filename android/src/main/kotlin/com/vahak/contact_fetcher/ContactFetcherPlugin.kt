@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -40,6 +41,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.notImplemented()
             }
         } else {
+            Log.e("Contact fetcher Plugin", "Contact permission is not enabled")
             result.error("Contact Permission not enabled", "", ArrayList<JSONObject>().toString())
         }
     }
