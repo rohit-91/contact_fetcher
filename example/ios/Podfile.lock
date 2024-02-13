@@ -1,0 +1,28 @@
+PODS:
+  - contact_fetcher (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - contact_fetcher (from `.symlinks/plugins/contact_fetcher/ios`)
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+
+EXTERNAL SOURCES:
+  contact_fetcher:
+    :path: ".symlinks/plugins/contact_fetcher/ios"
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+
+SPEC CHECKSUMS:
+  contact_fetcher: c148538ddbf6766ee61fc977ef883221ac29adfd
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  integration_test: 13825b8a9334a850581300559b8839134b124670
+
+PODFILE CHECKSUM: e008cdb6c294d660abf4a84054ae30386f103e28
+
+COCOAPODS: 1.15.2
