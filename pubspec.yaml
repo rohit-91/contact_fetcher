@@ -1,10 +1,10 @@
 name: contact_fetcher
 description: A flutter plugin for fetching the contacts from mobile device
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/rohit-91/contact_fetcher.git
 
 environment:
-  sdk: '>=3.1.5 <4.0.0'
+  sdk: '>=2.17.0 <4.0.0'
   flutter: '>=3.3.0'
 
 dependencies:
