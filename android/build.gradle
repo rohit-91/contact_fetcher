@@ -68,6 +68,6 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'locallib', include: ['*.aar', '*.jar'], exclude: [])
-    implementation 'androidx.legacy:legacy-support-core-ui:1.0.0'
+    //implementation fileTree(dir: 'locallib', include: ['*.aar', '*.jar'], exclude: [])
+    //implementation 'androidx.legacy:legacy-support-core-ui:1.0.0'
 }
