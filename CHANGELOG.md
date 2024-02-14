@@ -7,3 +7,6 @@
 ## 1.0.2
 
 * Added logs on the permission disabled
+## 1.0.3
+
+* Added contact photo support in the library
