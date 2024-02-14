@@ -145,10 +145,4 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             context, Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
     }
-
-    private fun getImageBytesFromBitmap(bitmap: Bitmap): ByteArray {
-        val stream = ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream);
-        return stream.toByteArray();
-    }
 }

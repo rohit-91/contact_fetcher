@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:contact_fetcher/contact.dart';
 import 'package:flutter/foundation.dart';
@@ -22,8 +23,12 @@ class MethodChannelContactFetcher extends ContactFetcherPlatform {
       for (var element in list) {
         Uint8List? bytes;
         if (element['photo'] != null) {
-          bytes = Uint8List.fromList(
-              (jsonDecode(element['photo']) as List).cast<int>());
+          if (Platform.isAndroid) {
+            bytes = Uint8List.fromList(
+                (jsonDecode(element['photo']) as List).cast<int>());
+          } else if (Platform.isIOS) {
+            bytes = Uint8List.fromList(element['photo'].cast<int>());
+          }
         }
         contacts.add(Contact(
             id: element['id'],

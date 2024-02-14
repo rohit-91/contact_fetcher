@@ -26,7 +26,9 @@ public class ContactFetcherPlugin: NSObject, FlutterPlugin {
             CNContactFormatter.descriptorForRequiredKeys(for: .fullName),
             CNContactPhoneNumbersKey,
             CNContactEmailAddressesKey,
-            CNContactThumbnailImageDataKey] as [Any]
+            CNContactThumbnailImageDataKey,
+            CNContactImageDataAvailableKey,
+            CNContactImageDataKey] as [Any]
         
         var allContainers: [CNContainer] = []
         do {
@@ -61,6 +63,10 @@ public class ContactFetcherPlugin: NSObject, FlutterPlugin {
                 numbers.append(phoneNumber.value.stringValue);
             }
             item["phone_numbers"]=numbers;
+            if let imageData = contact.imageData {
+                let contactImage = UIImage(data: imageData)
+                item["photo"] = self.convertImageToIntegerList(image: contactImage)
+            }
             result.append(item);
         }
         var encodedBytes=Data();
@@ -70,5 +76,17 @@ public class ContactFetcherPlugin: NSObject, FlutterPlugin {
             print("Json parsing failed for contacts");
         }
         return String(data:encodedBytes,encoding: .utf8)!;
+    }
+    
+    func convertImageToIntegerList(image: UIImage?) -> [Int]? {
+        guard let image = image else { return nil }
+        
+        if let imageData = image.jpegData(compressionQuality: 1.0) {
+            let byteArray = [UInt8](imageData)
+            let integerList = byteArray.map { Int($0) }
+            return integerList
+        }
+        
+        return nil
     }
 }
