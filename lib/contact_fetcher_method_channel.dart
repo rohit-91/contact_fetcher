@@ -20,9 +20,15 @@ class MethodChannelContactFetcher extends ContactFetcherPlatform {
     if ((contactsData ?? "").isNotEmpty) {
       List<dynamic> list = jsonDecode(contactsData!);
       for (var element in list) {
+        Uint8List? bytes;
+        if (element['photo'] != null) {
+          bytes = Uint8List.fromList(
+              (jsonDecode(element['photo']) as List).cast<int>());
+        }
         contacts.add(Contact(
             id: element['id'],
             name: element['name'],
+            photo: bytes,
             phoneNumbers: (element['phone_numbers'] as List<dynamic>)
                 .map((e) => e.toString())
                 .toList()));

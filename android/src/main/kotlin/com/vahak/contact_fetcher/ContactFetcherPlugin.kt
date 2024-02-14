@@ -5,6 +5,9 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
 import android.util.Log
@@ -18,6 +21,10 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
 
 
 /** ContactFetcherPlugin */
@@ -81,6 +88,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 "name",
                 cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
             )
+
             val phoneCursor = contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 null,
@@ -99,15 +107,48 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 )
             }
             contactObject.put("phone_numbers", phoneNumberList)
+            val bytes: ByteArray? = extractImageFromCursor(cursor)
+            if (bytes != null) {
+                contactObject.put("photo",bytes.toList())
+            }
             contactList.add(contactObject)
         }
         cursor.close()
         return contactList
     }
 
+    @SuppressLint("Recycle")
+    private fun extractImageFromCursor(cursor: Cursor): ByteArray? {
+        var imageBytes: ByteArray? = null
+        val columnIndex: Int = cursor.getColumnIndex(
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+        )
+        if (columnIndex == -1) {
+            return null
+        }
+        val imageUri: String = cursor.getString(
+            columnIndex
+        ) ?: return null
+        try {
+            val fis: InputStream? = context.contentResolver.openInputStream(Uri.parse(imageUri))
+            imageBytes = fis?.readBytes()!!
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return imageBytes
+    }
+
     private fun checkPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             context, Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun getImageBytesFromBitmap(bitmap: Bitmap): ByteArray {
+        val stream = ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream);
+        return stream.toByteArray();
     }
 }

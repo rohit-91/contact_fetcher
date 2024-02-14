@@ -64,6 +64,9 @@ class _MyAppState extends State<MyApp> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (_contacts[index].photo != null)
+                            Image.memory(_contacts[index].photo!,
+                                width: 40, height: 40),
                           Text("NAME: ${_contacts[index].name}"),
                           ListView.builder(
                               physics: const NeverScrollableScrollPhysics(),
