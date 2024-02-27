@@ -10,3 +10,6 @@
 ## 1.0.3
 
 * Added contact photo support in the library
+## 1.0.4
+
+* Added check for the empty contacts
