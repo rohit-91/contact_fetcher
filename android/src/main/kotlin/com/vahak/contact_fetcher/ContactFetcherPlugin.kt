@@ -6,7 +6,6 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
@@ -21,7 +20,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -109,9 +107,13 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             contactObject.put("phone_numbers", phoneNumberList)
             val bytes: ByteArray? = extractImageFromCursor(cursor)
             if (bytes != null) {
-                contactObject.put("photo",bytes.toList())
+                contactObject.put("photo", bytes.toList())
             }
-            contactList.add(contactObject)
+            if (contactObject.getString("name")
+                    .isNotEmpty() && contactObject.getJSONArray("phone_numbers").length() != 0
+            ) {
+                contactList.add(contactObject)
+            }
         }
         cursor.close()
         return contactList
