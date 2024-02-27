@@ -13,3 +13,6 @@
 ## 1.0.4
 
 * Added check for the empty contacts
+## 1.0.5
+
+* Check added for name value if not present.
