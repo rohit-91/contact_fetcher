@@ -109,7 +109,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             if (bytes != null) {
                 contactObject.put("photo", bytes.toList())
             }
-            if (contactObject.getString("name")
+            if (contactObject.has("name") && contactObject.getString("name")
                     .isNotEmpty() && contactObject.getJSONArray("phone_numbers").length() != 0
             ) {
                 contactList.add(contactObject)
