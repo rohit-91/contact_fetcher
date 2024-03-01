@@ -18,6 +18,10 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.FileNotFoundException
@@ -30,6 +34,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
     private lateinit var activity: FlutterActivity
+    private val mainScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "contact_fetcher")
@@ -40,8 +45,17 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         if (checkPermission()) {
             if (call.method == "get_all_contact") {
-                val data: List<JSONObject> = fetchContacts()
-                result.success(data.toString())
+                mainScope.launch {
+                    try {
+                        val data: List<JSONObject>
+                        withContext(Dispatchers.Default) {
+                            data = fetchContacts()
+                        }
+                        result.success(data.toString())
+                    } catch (e: Exception) {
+                        Log.e("Contact fetcher Plugin", e.message.toString())
+                    }
+                }
             } else {
                 result.notImplemented()
             }
@@ -81,7 +95,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         while (cursor!!.moveToNext()) {
             val contactObject = JSONObject()
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
-            contactObject.put("id", id);
+            contactObject.put("id", id)
             contactObject.put(
                 "name",
                 cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
@@ -104,6 +118,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     )
                 )
             }
+            phoneCursor.close()
             contactObject.put("phone_numbers", phoneNumberList)
             val bytes: ByteArray? = extractImageFromCursor(cursor)
             if (bytes != null) {
