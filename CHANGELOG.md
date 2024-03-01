@@ -16,3 +16,6 @@
 ## 1.0.5
 
 * Check added for name value if not present.
+## 1.0.6
+
+* Added co-routine for fetching the contact.
