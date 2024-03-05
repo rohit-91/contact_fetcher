@@ -19,3 +19,6 @@
 ## 1.0.6
 
 * Added co-routine for fetching the contact.
+## 1.0.7
+
+* Cache implemented for all contacts for one particular session.
