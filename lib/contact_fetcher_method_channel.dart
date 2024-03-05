@@ -10,14 +10,17 @@ import 'contact_fetcher_platform_interface.dart';
 /// An implementation of [ContactFetcherPlatform] that uses method channels.
 class MethodChannelContactFetcher extends ContactFetcherPlatform {
   /// The method channel used to interact with the native platform.
+  final List<Contact> _list = [];
   @visibleForTesting
   final methodChannel = const MethodChannel('contact_fetcher');
 
   @override
   Future<List<Contact>> getAllContact() async {
+    if (_list.isNotEmpty) {
+      return _list;
+    }
     final String? contactsData =
         await methodChannel.invokeMethod<String?>('get_all_contact');
-    List<Contact> contacts = [];
     if ((contactsData ?? "").isNotEmpty) {
       List<dynamic> list = jsonDecode(contactsData!);
       for (var element in list) {
@@ -30,7 +33,7 @@ class MethodChannelContactFetcher extends ContactFetcherPlatform {
             bytes = Uint8List.fromList(element['photo'].cast<int>());
           }
         }
-        contacts.add(Contact(
+        _list.add(Contact(
             id: element['id'],
             name: element['name'],
             photo: bytes,
@@ -39,6 +42,6 @@ class MethodChannelContactFetcher extends ContactFetcherPlatform {
                 .toList()));
       }
     }
-    return contacts;
+    return _list;
   }
 }
