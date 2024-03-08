@@ -18,6 +18,7 @@ class _MyAppState extends State<MyApp> {
   List<Contact> _contacts = [];
   final _contactFetcherPlugin = ContactFetcher();
   final ScrollController _controller = ScrollController();
+  int _pageNumber = 0;
 
   @override
   void initState() {
@@ -32,7 +33,9 @@ class _MyAppState extends State<MyApp> {
 
   updated() async {
     try {
-      _contacts = await _contactFetcherPlugin.getAllContact(limit: 10);
+      _contacts = await _contactFetcherPlugin.getAllContact(
+          limit: 10, pageNumber: _pageNumber);
+      _pageNumber++;
     } on PlatformException {
       _contacts = <Contact>[];
     }
