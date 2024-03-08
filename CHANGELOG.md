@@ -33,3 +33,7 @@
 ## 1.0.8
 
 * Pagination implemented in fetching the contact;
+
+## 1.0.9
+
+* Cursor position check updated;
