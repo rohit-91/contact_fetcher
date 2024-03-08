@@ -39,6 +39,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private val mainScope = CoroutineScope(Dispatchers.Main)
     private val contactList = mutableListOf<JSONObject>()
     private var pageLength = 10
+    private var pageNumber = 1
 
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -52,6 +53,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         if (checkPermission()) {
             if (call.method == "get_all_contact") {
                 pageLength = call.arguments<Map<String, Any>>()!!.get("limit") as Int
+                pageNumber = call.arguments<Map<String, Any>>()!!.get("page_number") as Int
                 mainScope.launch {
                     try {
                         val data: List<JSONObject>
@@ -92,11 +94,6 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         channel.setMethodCallHandler(null)
     }
 
-    private fun getPageNumber(): Int {
-        return (contactList.size / pageLength)
-    }
-
-
     private fun fetchContacts(): List<JSONObject> {
         fetchByPage()
         return contactList
@@ -105,7 +102,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     @SuppressLint("Range")
     @TargetApi(Build.VERSION_CODES.M)
     private fun fetchByPage() {
-        val startIndex = (getPageNumber() * pageLength).coerceAtLeast(1) - 1
+        val startIndex = (pageNumber * pageLength).coerceAtLeast(1) - 1
         val cursor = contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI, arrayOf(
                 ContactsContract.Contacts._ID,
@@ -114,6 +111,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             ), null, null, null
         )
         if (cursor != null && cursor.moveToPosition(startIndex)) {
+            contactList.clear()
             bindDataFromCursor(cursor)
             cursor.close()
         }
