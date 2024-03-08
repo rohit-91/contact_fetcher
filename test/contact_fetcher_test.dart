@@ -9,7 +9,7 @@ class MockContactFetcherPlatform
     with MockPlatformInterfaceMixin
     implements ContactFetcherPlatform {
   @override
-  Future<List<Contact>> getAllContact({int limit = 10}) {
+  Future<List<Contact>> getAllContact({int limit = 10, int pageNumber = 0}) {
     return Future.value(<Contact>[]);
   }
 }

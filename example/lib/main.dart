@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:contact_fetcher/contact.dart';
 import 'package:contact_fetcher/contact_fetcher.dart';
 import 'package:flutter/material.dart';
@@ -19,32 +17,26 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   List<Contact> _contacts = [];
   final _contactFetcherPlugin = ContactFetcher();
+  final ScrollController _controller = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    _controller.addListener(() async {
+      if (_controller.position.pixels == _controller.position.maxScrollExtent) {
+        updated();
+      }
+    });
+    updated();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    List<Contact>? contacts = <Contact>[];
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
+  updated() async {
     try {
-      contacts = await _contactFetcherPlugin.getAllContact(limit: 500);
+      _contacts = await _contactFetcherPlugin.getAllContact(limit: 10);
     } on PlatformException {
-      contacts = <Contact>[];
+      _contacts = <Contact>[];
     }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _contacts = contacts ?? <Contact>[];
-    });
+    setState(() {});
   }
 
   @override
@@ -53,6 +45,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(title: Text('Contact fetcher (${_contacts.length})')),
         body: ListView.builder(
+            controller: _controller,
             itemCount: _contacts.length,
             itemBuilder: (BuildContext context, int index) {
               return Padding(

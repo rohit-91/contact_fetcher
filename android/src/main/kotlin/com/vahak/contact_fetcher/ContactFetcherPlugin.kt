@@ -110,8 +110,8 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 ContactsContract.CommonDataKinds.Phone.PHOTO_URI
             ), null, null, null
         )
+        contactList.clear()
         if (cursor != null && cursor.moveToPosition(startIndex)) {
-            contactList.clear()
             bindDataFromCursor(cursor)
             cursor.close()
         }
