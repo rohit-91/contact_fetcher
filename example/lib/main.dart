@@ -28,11 +28,11 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    List<Contact>? contacts;
+    List<Contact>? contacts = <Contact>[];
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      contacts = await _contactFetcherPlugin.getAllContact();
+      contacts = await _contactFetcherPlugin.getAllContact(limit: 500);
     } on PlatformException {
       contacts = <Contact>[];
     }
@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Contact fetcher')),
+        appBar: AppBar(title: Text('Contact fetcher (${_contacts.length})')),
         body: ListView.builder(
             itemCount: _contacts.length,
             itemBuilder: (BuildContext context, int index) {

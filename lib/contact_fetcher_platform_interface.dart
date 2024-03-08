@@ -24,7 +24,7 @@ abstract class ContactFetcherPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<List<Contact>> getAllContact() {
+  Future<List<Contact>> getAllContact({int limit = 10}) {
     throw UnimplementedError('getAllContact() has not been implemented.');
   }
 }

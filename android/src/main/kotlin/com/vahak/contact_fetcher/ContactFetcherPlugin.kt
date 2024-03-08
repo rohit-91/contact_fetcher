@@ -3,6 +3,7 @@ package com.vahak.contact_fetcher
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -34,17 +35,23 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
     private lateinit var activity: FlutterActivity
+    private lateinit var contentResolver: ContentResolver
     private val mainScope = CoroutineScope(Dispatchers.Main)
+    private val contactList = mutableListOf<JSONObject>()
+    private var pageLength = 10
+
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "contact_fetcher")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
+        contentResolver = context.contentResolver
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         if (checkPermission()) {
             if (call.method == "get_all_contact") {
+                pageLength = call.arguments<Map<String, Any>>()!!.get("limit") as Int
                 mainScope.launch {
                     try {
                         val data: List<JSONObject>
@@ -85,14 +92,38 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         channel.setMethodCallHandler(null)
     }
 
+    private fun getPageNumber(): Int {
+        return (contactList.size / pageLength)
+    }
+
+
+    private fun fetchContacts(): List<JSONObject> {
+        fetchByPage()
+        return contactList
+    }
+
     @SuppressLint("Range")
     @TargetApi(Build.VERSION_CODES.M)
-    private fun fetchContacts(): List<JSONObject> {
-        val contactList = ArrayList<JSONObject>()
-        val contentResolver = context.contentResolver
-        val cursor =
-            contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null)
-        while (cursor!!.moveToNext()) {
+    private fun fetchByPage() {
+        val startIndex = (getPageNumber() * pageLength).coerceAtLeast(1) - 1
+        val cursor = contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI, arrayOf(
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+            ), null, null, null
+        )
+        if (cursor != null) {
+            cursor.moveToPosition(startIndex)
+            bindDataFromCursor(cursor)
+            cursor.close()
+        }
+    }
+
+    @SuppressLint("Range")
+    private fun bindDataFromCursor(cursor: Cursor) {
+        var count = 0
+        do {
             val contactObject = JSONObject()
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
             contactObject.put("id", id)
@@ -100,7 +131,6 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 "name",
                 cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
             )
-
             val phoneCursor = contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 null,
@@ -129,9 +159,8 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             ) {
                 contactList.add(contactObject)
             }
-        }
-        cursor.close()
-        return contactList
+            ++count
+        } while (cursor.moveToNext() && count < pageLength)
     }
 
     @SuppressLint("Recycle")
