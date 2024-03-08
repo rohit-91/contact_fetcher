@@ -37,3 +37,6 @@
 ## 1.0.9
 
 * Cursor position check updated;
+## 1.1.0
+
+* page number control moved out of the plugin;
