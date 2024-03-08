@@ -33,8 +33,9 @@ class _MyAppState extends State<MyApp> {
 
   updated() async {
     try {
-      _contacts = await _contactFetcherPlugin.getAllContact(
+      List<Contact> contacts = await _contactFetcherPlugin.getAllContact(
           limit: 10, pageNumber: _pageNumber);
+      _contacts.addAll(contacts);
       _pageNumber++;
     } on PlatformException {
       _contacts = <Contact>[];
@@ -48,6 +49,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(title: Text('Contact fetcher (${_contacts.length})')),
         body: ListView.builder(
+            key: Key("keyyyy"),
             controller: _controller,
             itemCount: _contacts.length,
             itemBuilder: (BuildContext context, int index) {
