@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'contact_fetcher'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'A flutter plugin for fetching the contacts from mobile device'
   s.description      = <<-DESC
 A flutter plugin for fetching the contacts from mobile device
