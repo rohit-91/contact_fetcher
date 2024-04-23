@@ -19,8 +19,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  contact_fetcher: c148538ddbf6766ee61fc977ef883221ac29adfd
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  contact_fetcher: 6a5faf13161a29ee0677bb8a5a77884e7f453813
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 13825b8a9334a850581300559b8839134b124670
 
 PODFILE CHECKSUM: e008cdb6c294d660abf4a84054ae30386f103e28

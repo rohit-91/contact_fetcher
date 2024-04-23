@@ -9,15 +9,12 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 A flutter plugin for fetching the contacts from mobile device
                        DESC
-  s.homepage         = 'http://example.com'
-  s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.homepage         = 'https://github.com/rohit-91/contact_fetcher'
+  s.license          = { :type => 'BSD', :file => '../LICENSE' }
+  s.author           = { 'Manish' => 'manish.kummar21@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '11.0'
-
-  # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.platform = :ios, '12.0'
   s.swift_version = '5.0'
 end
