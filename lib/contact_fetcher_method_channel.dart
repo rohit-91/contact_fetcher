@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:contact_fetcher/contact.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'contact_fetcher_platform_interface.dart';
@@ -11,7 +10,6 @@ import 'contact_fetcher_platform_interface.dart';
 class MethodChannelContactFetcher extends ContactFetcherPlatform {
   /// The method channel used to interact with the native platform.
   final List<Contact> _contacts = [];
-  @visibleForTesting
   final methodChannel = const MethodChannel('contact_fetcher');
 
   @override

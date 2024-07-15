@@ -104,12 +104,13 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private fun fetchByPage() {
         val startIndex = (pageNumber * pageLength).coerceAtLeast(1) - 1
         val cursor = contentResolver.query(
-            ContactsContract.Contacts.CONTENT_URI, arrayOf(
+                ContactsContract.Contacts.CONTENT_URI, arrayOf(
                 ContactsContract.Contacts._ID,
                 ContactsContract.Contacts.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.PHOTO_URI
-            ), null, null, null
-        )
+                ContactsContract.Contacts.HAS_PHONE_NUMBER,
+                ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
+        ), "${ContactsContract.Contacts.HAS_PHONE_NUMBER} = 1 AND LEFT JOIN ${ContactsContract.CommonDataKinds.Phone.CONTENT_URI} ON contacts.${ContactsContract.Contacts._ID} =  phones.${ContactsContract.CommonDataKinds.Phone.CONTACT_ID}",
+                null, null)
         contactList.clear()
         if (cursor != null && cursor.moveToPosition(startIndex)) {
             bindDataFromCursor(cursor)
@@ -125,24 +126,24 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
             contactObject.put("id", id)
             contactObject.put(
-                "name",
-                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
+                    "name",
+                    cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
             )
             val phoneCursor = contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                null,
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " =?",
-                arrayOf(id),
-                null
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " =?",
+                    arrayOf(id),
+                    null
             )
             val phoneNumberList = JSONArray()
             while (phoneCursor!!.moveToNext()) {
                 phoneNumberList.put(
-                    phoneCursor.getString(
-                        phoneCursor.getColumnIndex(
-                            ContactsContract.CommonDataKinds.Phone.NUMBER
+                        phoneCursor.getString(
+                                phoneCursor.getColumnIndex(
+                                        ContactsContract.CommonDataKinds.Phone.NUMBER
+                                )
                         )
-                    )
                 )
             }
             phoneCursor.close()
@@ -152,7 +153,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 contactObject.put("photo", bytes.toList())
             }
             if (contactObject.has("name") && contactObject.getString("name")
-                    .isNotEmpty() && contactObject.getJSONArray("phone_numbers").length() != 0
+                            .isNotEmpty() && contactObject.getJSONArray("phone_numbers").length() != 0
             ) {
                 contactList.add(contactObject)
             }
@@ -164,13 +165,13 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private fun extractImageFromCursor(cursor: Cursor): ByteArray? {
         var imageBytes: ByteArray? = null
         val columnIndex: Int = cursor.getColumnIndex(
-            ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+                ContactsContract.CommonDataKinds.Phone.PHOTO_URI
         )
         if (columnIndex == -1) {
             return null
         }
         val imageUri: String = cursor.getString(
-            columnIndex
+                columnIndex
         ) ?: return null
         try {
             val fis: InputStream? = context.contentResolver.openInputStream(Uri.parse(imageUri))
@@ -185,7 +186,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     private fun checkPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context, Manifest.permission.READ_CONTACTS
+                context, Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
     }
 }

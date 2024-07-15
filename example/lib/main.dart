@@ -49,7 +49,6 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(title: Text('Contact fetcher (${_contacts.length})')),
         body: ListView.builder(
-            key: Key("keyyyy"),
             controller: _controller,
             itemCount: _contacts.length,
             itemBuilder: (BuildContext context, int index) {
