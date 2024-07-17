@@ -1,5 +1,6 @@
 import 'package:contact_fetcher/contact.dart';
 import 'package:contact_fetcher/contact_fetcher.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,6 +19,7 @@ class _MyAppState extends State<MyApp> {
   List<Contact> _contacts = [];
   final _contactFetcherPlugin = ContactFetcher();
   final ScrollController _controller = ScrollController();
+  final TextEditingController _textEditingController = TextEditingController();
   int _pageNumber = 0;
 
   @override
@@ -26,6 +28,12 @@ class _MyAppState extends State<MyApp> {
     _controller.addListener(() async {
       if (_controller.position.pixels == _controller.position.maxScrollExtent) {
         updated();
+      }
+    });
+
+    _textEditingController.addListener(() {
+      if (_textEditingController.text.isNotEmpty) {
+        searchByText(_textEditingController.text);
       }
     });
     updated();
@@ -43,47 +51,96 @@ class _MyAppState extends State<MyApp> {
     setState(() {});
   }
 
+  searchByText(String value) {
+    if (value.isEmpty) {
+      updated();
+    } else {
+      _contactFetcherPlugin.searchContact(queryString: value).then((contacts) {
+        _contacts.clear();
+        _contacts.addAll(contacts);
+        setState(() {});
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: Text('Contact fetcher (${_contacts.length})')),
-        body: ListView.builder(
-            controller: _controller,
-            itemCount: _contacts.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_contacts[index].photo != null)
-                            Image.memory(_contacts[index].photo!,
-                                width: 40, height: 40),
-                          Text("NAME: ${_contacts[index].name}"),
-                          ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: _contacts[index].phoneNumbers.length,
-                              itemBuilder: (context, phoneIndex) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                      "PHONE ${phoneIndex + 1} : ${_contacts[index].phoneNumbers[phoneIndex]}"),
-                                );
-                              })
-                        ],
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black.withOpacity(0.7)),
+                    borderRadius: const BorderRadius.all(Radius.circular(28)),
+                    color: Colors.grey.withOpacity(0.34)),
+                child: TextFormField(
+                    controller: _textEditingController,
+                    autofocus: true,
+                    cursorColor: Colors.white,
+                    cursorErrorColor: Colors.red,
+                    decoration:
+                        const InputDecoration(border: InputBorder.none)),
+              ),
+              Expanded(
+                child: ListView.builder(
+                    controller: _controller,
+                    itemCount: _contacts.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return card(_contacts[index]);
+                    }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget card(Contact contact) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (contact.photo != null)
+                Image.memory(contact.photo!, width: 40, height: 40),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("NAME: ${contact.name}"),
+                      ListView(
+                        shrinkWrap: true,
+                        children: List.generate(contact.phoneNumbers.length,
+                            (phoneIndex) {
+                          return phoneNumberWidget(
+                              contact.phoneNumbers[phoneIndex], phoneIndex);
+                        }),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              );
-            }),
+              )
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget phoneNumberWidget(String number, int index) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text("PHONE ${index + 1} : $number"),
     );
   }
 }

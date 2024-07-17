@@ -1,17 +1,8 @@
 package com.vahak.contact_fetcher
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.ContentResolver
 import android.content.Context
-import android.content.pm.PackageManager
-import android.database.Cursor
-import android.net.Uri
-import android.os.Build
-import android.provider.ContactsContract
 import android.util.Log
-import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -23,11 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONObject
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStream
 
 
 /** ContactFetcherPlugin */
@@ -69,13 +56,13 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     }
                 }
             } else if (call.method == "search_contact") {
-                val queryString = call.arguments<Map<String, Any>>()!!.get("query_String") as String
+                val queryString = call.arguments<Map<String, Any>>()!!.get("query_string") as String
                 mainScope.launch {
                     try {
                         val data: List<JSONObject>
                         withContext(Dispatchers.Default) {
                             if (queryString.isNotEmpty()) {
-                                data = ContactUtils(contentResolver).fetchContactByNameOrNumber(
+                                data = ContactUtils(contentResolver).fetchContactByName(
                                     queryString
                                 );
                             } else {

@@ -1,8 +1,6 @@
 package com.vahak.contact_fetcher
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.ContentResolver
 import android.database.Cursor
 import android.net.Uri
@@ -22,29 +20,41 @@ class ContactUtils(private var contentResolver: ContentResolver) {
         val startIndex = (pageNumber * pageLength).coerceAtLeast(1) - 1
         val contactCursor = getContactsCursor("");
         if (contactCursor != null) {
-            contactList.addAll(bindDataFromCursor(contactCursor, startIndex, pageLength))
+            contactCursor.moveToPosition(startIndex)
+            contactList.addAll(bindDataFromCursor(contactCursor, pageLength))
             contactCursor.close()
         }
         return contactList;
     }
 
-    fun fetchContactByNameOrNumber(queryString: String): ArrayList<JSONObject> {
+    fun fetchContactByName(queryString: String): ArrayList<JSONObject> {
         val contactList = ArrayList<JSONObject>();
         val contactCursor = getContactsCursor(queryString);
         if (contactCursor != null) {
-            contactList.addAll(bindDataFromCursor(contactCursor, 0, 20))
+            contactCursor.moveToFirst()
+            contactList.addAll(bindDataFromCursor(contactCursor, 20))
             contactCursor.close()
         }
         return contactList;
     }
 
     private fun getContactsCursor(queryString: String): Cursor? {
-        var querySelector = "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ${queryString}";
+        var querySelector: String? = null;
+        if (queryString.isNotEmpty()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                querySelector = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE ?"
+            else
+                querySelector = "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ?"
+        }
         val cursor = contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
             arrayOf(
                 ContactsContract.Contacts._ID,
-                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.LOOKUP_KEY,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
+                else
+                    ContactsContract.Contacts.DISPLAY_NAME,
                 ContactsContract.Contacts.HAS_PHONE_NUMBER,
                 ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
@@ -86,17 +96,17 @@ class ContactUtils(private var contentResolver: ContentResolver) {
     @SuppressLint("Range")
     private fun bindDataFromCursor(
         cursor: Cursor,
-        startIndex: Int,
         pageLength: Int
     ): ArrayList<JSONObject> {
         var count = 0
         val contactList = ArrayList<JSONObject>()
-        cursor.moveToPosition(startIndex)
         do {
             val contactObject = JSONObject()
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
-            val name =
-                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
+            val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)) else cursor.getString(
+                cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+            )
             val phoneNumbers = fetchPhoneDataFromCursor(getPhoneCursor(id))
 
             if (name.isNotEmpty() && phoneNumbers.length() > 0) {

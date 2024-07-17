@@ -7,4 +7,9 @@ class ContactFetcher {
     return ContactFetcherPlatform.instance
         .getAllContact(limit: limit, pageNumber: pageNumber);
   }
+
+  Future<List<Contact>> searchContact({String queryString = ""}) {
+    return ContactFetcherPlatform.instance
+        .searchContact(queryString: queryString);
+  }
 }
