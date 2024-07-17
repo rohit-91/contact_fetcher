@@ -27,7 +27,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _controller.addListener(() async {
-      if (_controller.position.pixels == _controller.position.maxScrollExtent) {
+      if (_controller.position.pixels == _controller.position.maxScrollExtent &&
+          _textEditingController.text.isEmpty) {
         updated();
       }
     });
