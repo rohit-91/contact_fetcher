@@ -42,9 +42,10 @@ class ContactUtils(private var contentResolver: ContentResolver) {
         var querySelector: String? = null;
         if (queryString.isNotEmpty()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                querySelector = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE ?"
+                querySelector =
+                    "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE ${queryString}"
             else
-                querySelector = "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ?"
+                querySelector = "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ${queryString}"
         }
         val cursor = contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,

@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   final ScrollController _controller = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
   int _pageNumber = 0;
+  bool isRequested = false;
 
   @override
   void initState() {
@@ -40,27 +41,31 @@ class _MyAppState extends State<MyApp> {
   }
 
   updated() async {
-    try {
-      List<Contact> contacts = await _contactFetcherPlugin.getAllContact(
-          limit: 10, pageNumber: _pageNumber);
-      _contacts.addAll(contacts);
-      _pageNumber++;
-    } on PlatformException {
-      _contacts = <Contact>[];
-    }
-    setState(() {});
-  }
-
-  searchByText(String value) {
-    if (value.isEmpty) {
-      updated();
-    } else {
-      _contactFetcherPlugin.searchContact(queryString: value).then((contacts) {
-        _contacts.clear();
+    if (!isRequested) {
+      isRequested = true;
+      try {
+        List<Contact> contacts = await _contactFetcherPlugin.getAllContact(
+            limit: 10, pageNumber: _pageNumber);
         _contacts.addAll(contacts);
-        setState(() {});
+        _pageNumber++;
+      } on PlatformException {
+        _contacts = <Contact>[];
+      }
+      isRequested = false;
+      setState(() {
+        print(" 1=> State Set");
       });
     }
+  }
+
+  void searchByText(String value) {
+    _contactFetcherPlugin.searchContact(queryString: value).then((contacts) {
+      _contacts.clear();
+      _contacts.addAll(contacts);
+      setState(() {
+        print("2=> State Set");
+      });
+    });
   }
 
   @override
@@ -73,6 +78,7 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: [
               Container(
+                margin: const EdgeInsets.only(top: 8,bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.black.withOpacity(0.7)),
@@ -90,6 +96,7 @@ class _MyAppState extends State<MyApp> {
                 child: ListView.builder(
                     controller: _controller,
                     itemCount: _contacts.length,
+                    physics: const AlwaysScrollableScrollPhysics(),
                     itemBuilder: (BuildContext context, int index) {
                       return card(_contacts[index]);
                     }),
@@ -118,14 +125,11 @@ class _MyAppState extends State<MyApp> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("NAME: ${contact.name}"),
-                      ListView(
-                        shrinkWrap: true,
-                        children: List.generate(contact.phoneNumbers.length,
-                            (phoneIndex) {
-                          return phoneNumberWidget(
-                              contact.phoneNumbers[phoneIndex], phoneIndex);
-                        }),
-                      ),
+                      ...List.generate(contact.phoneNumbers.length,
+                          (phoneIndex) {
+                        return phoneNumberWidget(
+                            contact.phoneNumbers[phoneIndex], phoneIndex);
+                      })
                     ],
                   ),
                 ),

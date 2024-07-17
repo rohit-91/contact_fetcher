@@ -37,12 +37,12 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         if (PermissionUtils.checkPermission(context)) {
+            var data: List<JSONObject> = ArrayList()
             if (call.method == "get_all_contact") {
                 pageLength = call.arguments<Map<String, Any>>()!!.get("limit") as Int
                 pageNumber = call.arguments<Map<String, Any>>()!!.get("page_number") as Int
                 mainScope.launch {
                     try {
-                        val data: List<JSONObject>
                         withContext(Dispatchers.Default) {
                             data = ContactUtils(contentResolver).fetchContactByPage(
                                 pageNumber,
@@ -59,19 +59,12 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val queryString = call.arguments<Map<String, Any>>()!!.get("query_string") as String
                 mainScope.launch {
                     try {
-                        val data: List<JSONObject>
                         withContext(Dispatchers.Default) {
                             if (queryString.isNotEmpty()) {
                                 data = ContactUtils(contentResolver).fetchContactByName(
                                     queryString
                                 );
-                            } else {
-                                data = ContactUtils(contentResolver).fetchContactByPage(
-                                    1,
-                                    50
-                                )
                             }
-
                         }
                         result.success(data.toString())
                     } catch (e: Exception) {
