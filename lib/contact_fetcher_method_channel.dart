@@ -47,7 +47,6 @@ class MethodChannelContactFetcher extends ContactFetcherPlatform {
     final String? contactsData = await methodChannel
         .invokeMethod<String?>('search_contact', {"query_string": queryString});
     if ((contactsData ?? "").isNotEmpty) {
-      print("String=====>${contactsData}");
       List<dynamic> list = jsonDecode(contactsData!);
       for (var element in list) {
         Uint8List? bytes;
