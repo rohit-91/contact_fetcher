@@ -36,6 +36,8 @@ class _MyAppState extends State<MyApp> {
     _textEditingController.addListener(() {
       if (_textEditingController.text.isNotEmpty) {
         searchByText(_textEditingController.text);
+      } else {
+        _pageNumber = 0;
       }
     });
     updated();
