@@ -18,8 +18,8 @@ class ContactUtils(private var contentResolver: ContentResolver) {
     fun fetchContactByPage(pageNumber: Int, pageLength: Int): ArrayList<JSONObject> {
         val contactList = ArrayList<JSONObject>();
         val startIndex = (pageNumber * pageLength).coerceAtLeast(1) - 1
-        val contactCursor = getContactsCursor("");
-        if (contactCursor != null) {
+        val contactCursor = CursorUtils(contentResolver).getContactsCursor("");
+        if (contactCursor != null && contactCursor.count > 0) {
             contactCursor.moveToPosition(startIndex)
             contactList.addAll(bindDataFromCursor(contactCursor, pageLength))
             contactCursor.close()
@@ -29,53 +29,13 @@ class ContactUtils(private var contentResolver: ContentResolver) {
 
     fun fetchContactByName(queryString: String): ArrayList<JSONObject> {
         val contactList = ArrayList<JSONObject>();
-        val contactCursor = getContactsCursor(queryString);
-        if (contactCursor != null) {
+        val contactCursor = CursorUtils(contentResolver).getContactsCursor("")
+        if (contactCursor != null && contactCursor.count > 0) {
             contactCursor.moveToFirst()
             contactList.addAll(bindDataFromCursor(contactCursor, 20))
             contactCursor.close()
         }
         return contactList;
-    }
-
-    private fun getContactsCursor(queryString: String): Cursor? {
-        var querySelector: String? = null;
-        if (queryString.isNotEmpty()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                querySelector =
-                    "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE ${queryString}"
-            else
-                querySelector = "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ${queryString}"
-        }
-        val cursor = contentResolver.query(
-            ContactsContract.Contacts.CONTENT_URI,
-            arrayOf(
-                ContactsContract.Contacts._ID,
-                ContactsContract.Contacts.LOOKUP_KEY,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
-                else
-                    ContactsContract.Contacts.DISPLAY_NAME,
-                ContactsContract.Contacts.HAS_PHONE_NUMBER,
-                ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
-                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
-            ),
-            querySelector,
-            null,
-            null
-        )
-        return cursor;
-    }
-
-    private fun getPhoneCursor(contactId: String): Cursor? {
-        val phoneCursor = contentResolver.query(
-            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-            arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " =?",
-            arrayOf(contactId),
-            null
-        )
-        return phoneCursor
     }
 
     @SuppressLint("Range")
@@ -104,12 +64,10 @@ class ContactUtils(private var contentResolver: ContentResolver) {
         do {
             val contactObject = JSONObject()
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
-            val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)) else cursor.getString(
-                cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-            )
-            val phoneNumbers = fetchPhoneDataFromCursor(getPhoneCursor(id))
-
+            val name =
+                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY))
+            val phoneNumbers =
+                fetchPhoneDataFromCursor(CursorUtils(contentResolver).getPhoneCursor(id))
             if (name.isNotEmpty() && phoneNumbers.length() > 0) {
                 contactObject.put("id", id)
                 contactObject.put("name", name)
@@ -147,6 +105,4 @@ class ContactUtils(private var contentResolver: ContentResolver) {
         }
         return imageBytes
     }
-
-
 }

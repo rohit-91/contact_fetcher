@@ -51,21 +51,25 @@ class _MyAppState extends State<MyApp> {
       } on PlatformException {
         _contacts = <Contact>[];
       }
-      isRequested = false;
+
       setState(() {
+        isRequested = false;
         print(" 1=> State Set");
       });
     }
   }
 
   void searchByText(String value) {
-    _contactFetcherPlugin.searchContact(queryString: value).then((contacts) {
-      _contacts.clear();
-      _contacts.addAll(contacts);
-      setState(() {
-        print("2=> State Set");
+    if (!isRequested) {
+      _contactFetcherPlugin.searchContact(queryString: value).then((contacts) {
+        _contacts.clear();
+        _contacts.addAll(contacts);
+        setState(() {
+          isRequested = false;
+          print("2=> State Set");
+        });
       });
-    });
+    }
   }
 
   @override
@@ -78,7 +82,7 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: [
               Container(
-                margin: const EdgeInsets.only(top: 8,bottom: 8),
+                margin: const EdgeInsets.only(top: 8, bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.black.withOpacity(0.7)),
