@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.database.Cursor
 import android.os.Build
 import android.provider.ContactsContract
+import android.util.Log
 
 class CursorUtils(private val contentResolver: ContentResolver) {
 
@@ -12,10 +13,10 @@ class CursorUtils(private val contentResolver: ContentResolver) {
         if (queryString.isNotEmpty()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 querySelector =
-                    "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE ${queryString}"
+                    "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE '%${queryString}%'"
             else
                 querySelector =
-                    "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ${queryString}"
+                    "${ContactsContract.Contacts.DISPLAY_NAME} LIKE '%${queryString}%'"
         } else {
             querySelector = "${ContactsContract.Contacts.HAS_PHONE_NUMBER} = 1"
         }
@@ -32,7 +33,7 @@ class CursorUtils(private val contentResolver: ContentResolver) {
     fun getContactsCursor(queryString: String): Cursor? {
         var contentURI = ContactsContract.Contacts.CONTENT_URI
         if (queryString.isNotEmpty()) {
-            contentURI = ContactsContract.Contacts.CONTENT_FILTER_URI
+            contentURI = ContactsContract.Contacts.CONTENT_URI
         }
         val cursor = contentResolver.query(
             contentURI,
@@ -49,6 +50,7 @@ class CursorUtils(private val contentResolver: ContentResolver) {
             null,
             getSortingOrder()
         )
+        Log.e("======> ","${cursor!!.count} ${queryString}")
         return cursor;
     }
 

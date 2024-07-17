@@ -29,7 +29,7 @@ class ContactUtils(private var contentResolver: ContentResolver) {
 
     fun fetchContactByName(queryString: String): ArrayList<JSONObject> {
         val contactList = ArrayList<JSONObject>();
-        val contactCursor = CursorUtils(contentResolver).getContactsCursor("")
+        val contactCursor = CursorUtils(contentResolver).getContactsCursor(queryString)
         if (contactCursor != null && contactCursor.count > 0) {
             contactCursor.moveToFirst()
             contactList.addAll(bindDataFromCursor(contactCursor, 20))
