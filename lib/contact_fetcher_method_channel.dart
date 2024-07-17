@@ -16,8 +16,7 @@ class MethodChannelContactFetcher extends ContactFetcherPlatform {
       {int limit = 10, int pageNumber = 0}) async {
     List<Contact> contacts = [];
     final String? contactsData = await methodChannel.invokeMethod<String?>(
-        'get_all_contact',
-        {"limit": limit, "page_number": pageNumber, "query_string": ""});
+        'get_all_contact', {"limit": limit, "page_number": pageNumber});
     if ((contactsData ?? "").isNotEmpty) {
       List<dynamic> list = jsonDecode(contactsData!);
       for (var element in list) {
