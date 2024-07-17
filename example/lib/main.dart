@@ -54,7 +54,6 @@ class _MyAppState extends State<MyApp> {
 
       setState(() {
         isRequested = false;
-        print(" 1=> State Set");
       });
     }
   }
@@ -66,7 +65,6 @@ class _MyAppState extends State<MyApp> {
         _contacts.addAll(contacts);
         setState(() {
           isRequested = false;
-          print("2=> State Set");
         });
       });
     }
