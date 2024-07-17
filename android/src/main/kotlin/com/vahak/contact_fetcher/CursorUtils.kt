@@ -50,7 +50,6 @@ class CursorUtils(private val contentResolver: ContentResolver) {
             null,
             getSortingOrder()
         )
-        Log.e("======> ","${cursor!!.count} ${queryString}")
         return cursor;
     }
 
