@@ -49,7 +49,7 @@ class ContactUtils(private var contentResolver: ContentResolver) {
                 ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
             ),
-            queryString,
+            querySelector,
             null,
             null
         )
