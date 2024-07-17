@@ -27,4 +27,8 @@ abstract class ContactFetcherPlatform extends PlatformInterface {
   Future<List<Contact>> getAllContact({int limit = 10, int pageNumber = 0}) {
     throw UnimplementedError('getAllContact() has not been implemented.');
   }
+
+  Future<List<Contact>> searchContact({String queryString=""}) {
+    throw UnimplementedError('searchContact() has not been implemented.');
+  }
 }

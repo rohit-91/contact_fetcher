@@ -17,11 +17,10 @@ import java.io.InputStream
 class ContactUtils(private var contentResolver: ContentResolver) {
 
     @SuppressLint("Range")
-    @TargetApi(Build.VERSION_CODES.M)
     fun fetchContactByPage(pageNumber: Int, pageLength: Int): ArrayList<JSONObject> {
         val contactList = ArrayList<JSONObject>();
         val startIndex = (pageNumber * pageLength).coerceAtLeast(1) - 1
-        val contactCursor = getContactsCursor();
+        val contactCursor = getContactsCursor("");
         if (contactCursor != null) {
             contactList.addAll(bindDataFromCursor(contactCursor, startIndex, pageLength))
             contactCursor.close()
@@ -29,7 +28,18 @@ class ContactUtils(private var contentResolver: ContentResolver) {
         return contactList;
     }
 
-    private fun getContactsCursor(): Cursor? {
+    fun fetchContactByNameOrNumber(queryString: String): ArrayList<JSONObject> {
+        val contactList = ArrayList<JSONObject>();
+        val contactCursor = getContactsCursor(queryString);
+        if (contactCursor != null) {
+            contactList.addAll(bindDataFromCursor(contactCursor, 0, 20))
+            contactCursor.close()
+        }
+        return contactList;
+    }
+
+    private fun getContactsCursor(queryString: String): Cursor? {
+        var querySelector = "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ${queryString}";
         val cursor = contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
             arrayOf(
@@ -39,7 +49,7 @@ class ContactUtils(private var contentResolver: ContentResolver) {
                 ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
             ),
-            "${ContactsContract.Contacts.HAS_PHONE_NUMBER}=1 AND LEFT JOIN ${ContactsContract.CommonDataKinds.Phone.CONTENT_URI} ON contacts.${ContactsContract.Contacts._ID} =  phones.${ContactsContract.CommonDataKinds.Phone.CONTACT_ID}",
+            queryString,
             null,
             null
         )

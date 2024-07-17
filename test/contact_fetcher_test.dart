@@ -12,6 +12,11 @@ class MockContactFetcherPlatform
   Future<List<Contact>> getAllContact({int limit = 10, int pageNumber = 0}) {
     return Future.value(<Contact>[]);
   }
+
+  @override
+  Future<List<Contact>> searchContact({String queryString = ""}) {
+    return Future.value(<Contact>[]);
+  }
 }
 
 void main() {

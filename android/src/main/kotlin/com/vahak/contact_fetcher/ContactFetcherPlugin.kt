@@ -53,14 +53,20 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             if (call.method == "get_all_contact") {
                 pageLength = call.arguments<Map<String, Any>>()!!.get("limit") as Int
                 pageNumber = call.arguments<Map<String, Any>>()!!.get("page_number") as Int
+                val queryString = call.arguments<Map<String, Any>>()!!.get("query_String") as String
                 mainScope.launch {
                     try {
                         val data: List<JSONObject>
                         withContext(Dispatchers.Default) {
-                            data = ContactUtils(contentResolver).fetchContactByPage(
-                                pageNumber,
-                                pageLength
-                            )
+                            if(queryString.isNotEmpty()){
+                                data=ContactUtils(contentResolver).fetchContactByNameOrNumber(queryString);
+                            }else{
+                                data = ContactUtils(contentResolver).fetchContactByPage(
+                                    pageNumber,
+                                    pageLength
+                                )
+                            }
+
                         }
                         result.success(data.toString())
                     } catch (e: Exception) {
