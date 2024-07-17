@@ -37,7 +37,6 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var activity: FlutterActivity
     private lateinit var contentResolver: ContentResolver
     private val mainScope = CoroutineScope(Dispatchers.Main)
-    private val contactList = mutableListOf<JSONObject>()
     private var pageLength = 10
     private var pageNumber = 1
 
@@ -50,7 +49,7 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        if (checkPermission()) {
+        if (PermissionUtils.checkPermission(context)) {
             if (call.method == "get_all_contact") {
                 pageLength = call.arguments<Map<String, Any>>()!!.get("limit") as Int
                 pageNumber = call.arguments<Map<String, Any>>()!!.get("page_number") as Int
@@ -58,7 +57,10 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     try {
                         val data: List<JSONObject>
                         withContext(Dispatchers.Default) {
-                            data = fetchContacts()
+                            data = ContactUtils(contentResolver).fetchContactByPage(
+                                pageNumber,
+                                pageLength
+                            )
                         }
                         result.success(data.toString())
                     } catch (e: Exception) {
@@ -88,105 +90,10 @@ class ContactFetcherPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity as FlutterActivity
+        channel.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromActivity() {
         channel.setMethodCallHandler(null)
-    }
-
-    private fun fetchContacts(): List<JSONObject> {
-        fetchByPage()
-        return contactList
-    }
-
-    @SuppressLint("Range")
-    @TargetApi(Build.VERSION_CODES.M)
-    private fun fetchByPage() {
-        val startIndex = (pageNumber * pageLength).coerceAtLeast(1) - 1
-        val cursor = contentResolver.query(
-                ContactsContract.Contacts.CONTENT_URI, arrayOf(
-                ContactsContract.Contacts._ID,
-                ContactsContract.Contacts.DISPLAY_NAME,
-                ContactsContract.Contacts.HAS_PHONE_NUMBER,
-                ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
-        ), "${ContactsContract.Contacts.HAS_PHONE_NUMBER} = 1 AND LEFT JOIN ${ContactsContract.CommonDataKinds.Phone.CONTENT_URI} ON contacts.${ContactsContract.Contacts._ID} =  phones.${ContactsContract.CommonDataKinds.Phone.CONTACT_ID}",
-                null, null)
-        contactList.clear()
-        if (cursor != null && cursor.moveToPosition(startIndex)) {
-            bindDataFromCursor(cursor)
-            cursor.close()
-        }
-    }
-
-    @SuppressLint("Range")
-    private fun bindDataFromCursor(cursor: Cursor) {
-        var count = 0
-        do {
-            val contactObject = JSONObject()
-            val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
-            contactObject.put("id", id)
-            contactObject.put(
-                    "name",
-                    cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
-            )
-            val phoneCursor = contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " =?",
-                    arrayOf(id),
-                    null
-            )
-            val phoneNumberList = JSONArray()
-            while (phoneCursor!!.moveToNext()) {
-                phoneNumberList.put(
-                        phoneCursor.getString(
-                                phoneCursor.getColumnIndex(
-                                        ContactsContract.CommonDataKinds.Phone.NUMBER
-                                )
-                        )
-                )
-            }
-            phoneCursor.close()
-            contactObject.put("phone_numbers", phoneNumberList)
-            val bytes: ByteArray? = extractImageFromCursor(cursor)
-            if (bytes != null) {
-                contactObject.put("photo", bytes.toList())
-            }
-            if (contactObject.has("name") && contactObject.getString("name")
-                            .isNotEmpty() && contactObject.getJSONArray("phone_numbers").length() != 0
-            ) {
-                contactList.add(contactObject)
-            }
-            ++count
-        } while (cursor.moveToNext() && count < pageLength)
-    }
-
-    @SuppressLint("Recycle")
-    private fun extractImageFromCursor(cursor: Cursor): ByteArray? {
-        var imageBytes: ByteArray? = null
-        val columnIndex: Int = cursor.getColumnIndex(
-                ContactsContract.CommonDataKinds.Phone.PHOTO_URI
-        )
-        if (columnIndex == -1) {
-            return null
-        }
-        val imageUri: String = cursor.getString(
-                columnIndex
-        ) ?: return null
-        try {
-            val fis: InputStream? = context.contentResolver.openInputStream(Uri.parse(imageUri))
-            imageBytes = fis?.readBytes()!!
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return imageBytes
-    }
-
-    private fun checkPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-                context, Manifest.permission.READ_CONTACTS
-        ) == PackageManager.PERMISSION_GRANTED
     }
 }
