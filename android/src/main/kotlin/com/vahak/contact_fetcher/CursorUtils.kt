@@ -17,16 +17,16 @@ class CursorUtils(private val contentResolver: ContentResolver) {
                 querySelector =
                     "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ${queryString}"
         } else {
-            querySelector = null
+            querySelector = "${ContactsContract.Contacts.HAS_PHONE_NUMBER} = 1"
         }
         return querySelector;
     }
 
     private fun getSortingOrder(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-            return ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC"
+            return ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
         else
-            return ContactsContract.Contacts.DISPLAY_NAME + " ASC"
+            return ContactsContract.Contacts.DISPLAY_NAME
     }
 
     fun getContactsCursor(queryString: String): Cursor? {
@@ -45,7 +45,7 @@ class CursorUtils(private val contentResolver: ContentResolver) {
                 ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
             ),
-            null,
+            getSelectorString(queryString),
             null,
             getSortingOrder()
         )

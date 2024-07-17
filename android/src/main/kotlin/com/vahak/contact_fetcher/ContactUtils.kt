@@ -64,11 +64,11 @@ class ContactUtils(private var contentResolver: ContentResolver) {
         do {
             val contactObject = JSONObject()
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
-            val name =
-                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY))
+            val name: String? =
+                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
             val phoneNumbers =
                 fetchPhoneDataFromCursor(CursorUtils(contentResolver).getPhoneCursor(id))
-            if (name.isNotEmpty() && phoneNumbers.length() > 0) {
+            if (!name.isNullOrEmpty() && phoneNumbers.length() > 0) {
                 contactObject.put("id", id)
                 contactObject.put("name", name)
                 contactObject.put("phone_numbers", phoneNumbers)
