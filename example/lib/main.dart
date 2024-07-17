@@ -38,6 +38,7 @@ class _MyAppState extends State<MyApp> {
         searchByText(_textEditingController.text);
       } else {
         _pageNumber = 0;
+        updated();
       }
     });
     updated();
