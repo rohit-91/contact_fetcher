@@ -14,7 +14,12 @@ public class ContactFetcherPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "get_all_contact":
-            result(encodeContacts(contactList:fetchContacts()))
+            result(encodeContacts(contactList:fetchContacts()));
+            break;
+        case "search_contact":
+            let queryString:String = (call.arguments as! [String:Any])["query_string"] as! String
+            result(encodeContacts(contactList: fetchContactsByName(name:queryString)))
+            break;
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -40,10 +45,42 @@ public class ContactFetcherPlugin: NSObject, FlutterPlugin {
         var results: [CNContact] = []
         
         for container in allContainers {
-            let fetchPredicate = CNContact.predicateForContactsInContainer(withIdentifier: container.identifier)
+            let fetchPredicate = CNContact.predicateForContactsInContainer(withIdentifier: container.identifier);
             
             do {
                 let containerResults = try contactStore.unifiedContacts(matching: fetchPredicate, keysToFetch: keysToFetch as! [CNKeyDescriptor])
+                results.append(contentsOf: containerResults)
+            } catch {
+                print("Error fetching containers")
+            }
+        }
+        return results;
+    }
+    
+    private func fetchContactsByName(name:String)->[CNContact] {
+        let contactStore = CNContactStore()
+        let keysToFetch = [
+            CNContactFormatter.descriptorForRequiredKeys(for: .fullName),
+            CNContactPhoneNumbersKey,
+            CNContactEmailAddressesKey,
+            CNContactThumbnailImageDataKey,
+            CNContactImageDataAvailableKey,
+            CNContactImageDataKey] as [Any]
+        
+        var allContainers: [CNContainer] = []
+        do {
+            allContainers = try contactStore.containers(matching: nil)
+        } catch {
+            print("Error fetching containers")
+        }
+        
+        var results: [CNContact] = []
+        
+        for container in allContainers {
+            let namePredicate = CNContact.predicateForContacts(matchingName : name);
+            
+            do {
+                let containerResults = try contactStore.unifiedContacts(matching: namePredicate, keysToFetch: keysToFetch as! [CNKeyDescriptor])
                 results.append(contentsOf: containerResults)
             } catch {
                 print("Error fetching containers")
