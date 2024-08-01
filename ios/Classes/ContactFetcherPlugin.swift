@@ -18,7 +18,11 @@ public class ContactFetcherPlugin: NSObject, FlutterPlugin {
             break;
         case "search_contact":
             let queryString:String = (call.arguments as! [String:Any])["query_string"] as! String
-            result(encodeContacts(contactList: fetchContactsByName(name:queryString)))
+            if queryString.isEmpty{
+                result(encodeContacts(contactList:fetchContacts()));
+            }else{
+                result(encodeContacts(contactList: fetchContactsByName(name:queryString)))
+            }
             break;
         default:
             result(FlutterMethodNotImplemented)
